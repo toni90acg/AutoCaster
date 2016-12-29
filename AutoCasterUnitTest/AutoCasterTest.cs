@@ -1,8 +1,4 @@
-﻿using System;
-using System.CodeDom;
-using System.Reflection;
-using AutoCaster;
-using AutoCaster.Interfaces;
+﻿using AutoCaster.Interfaces;
 using AutoCasterUnitTest.ClassesForTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

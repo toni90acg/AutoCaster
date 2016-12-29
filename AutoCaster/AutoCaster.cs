@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using AutoCaster.AutoCastStrategy;
 using AutoCaster.Exceptions;
 using AutoCaster.Interfaces;
 
@@ -9,12 +9,15 @@ namespace AutoCaster
 {
     public class AutoCaster : IAutoCaster
     {
-        private readonly Dictionary<Type, Func<object, object>> _optionsToCast;
+        internal readonly Dictionary<Type, Func<object, object>> OptionsToCast;
+        internal object ObjectToCast;
+        internal Type CastToType;
 
         #region Constructor
+
         public AutoCaster()
         {
-            _optionsToCast = new Dictionary<Type, Func<object, object>>
+            OptionsToCast = new Dictionary<Type, Func<object, object>>
             {
                 {typeof(string), o => o.ToString()},
                 {typeof(int), o => Convert.ToInt32(o)},
@@ -22,6 +25,7 @@ namespace AutoCaster
                 {typeof(bool), o => Convert.ToBoolean(o)}
             };
         }
+
         #endregion
 
         #region Public Methods
@@ -36,6 +40,19 @@ namespace AutoCaster
 
         public bool TryAutoCast(object objectToCast, Type castToType, out object castedObject)
         {
+            ObjectToCast = objectToCast;
+            CastToType = castToType;
+
+            var strategyHandler = new AutoCastStrategyHandler(this);
+            var strategy = strategyHandler.GetAutoCastStrategy(castToType);
+            castedObject = strategy.AutoCast(this);
+
+            return castedObject != null;
+        }
+
+        [Obsolete("Better to use TryAutoCastWithStrategies")]
+        public bool TryAutoCastWithoutStrategies(object objectToCast, Type castToType, out object castedObject)
+        {
             if (castToType == objectToCast.GetType())
             {
                 castedObject = objectToCast;
@@ -43,7 +60,7 @@ namespace AutoCaster
             }
             try
             {
-                if (_optionsToCast.ContainsKey(castToType))
+                if (OptionsToCast.ContainsKey(castToType))
                 {
                     if (TryCastElement(castToType, objectToCast, out castedObject))
                     {
@@ -67,13 +84,13 @@ namespace AutoCaster
         #endregion
 
         #region Register and Unregister
-        
+
         public IAutoCaster RegisterCastMapping(Type typeToCast, Func<object, object> mappingFunc)
         {
             TypeIsRegistered(typeToCast);
             if (!TypeIsRegistered(typeToCast))
             {
-                _optionsToCast.Add(typeToCast, mappingFunc);
+                OptionsToCast.Add(typeToCast, mappingFunc);
             }
             return this;
         }
@@ -87,7 +104,7 @@ namespace AutoCaster
         {
             if (TypeIsRegistered(typeToCast))
             {
-                _optionsToCast.Remove(typeToCast);
+                OptionsToCast.Remove(typeToCast);
             }
             return this;
         }
@@ -103,12 +120,12 @@ namespace AutoCaster
 
         public IList<Type> GetListOfTypesRegistered()
         {
-            return _optionsToCast.Select(k => k.Key).ToList();
+            return OptionsToCast.Select(k => k.Key).ToList();
         }
 
         public Func<object, object> GetFuncForType(Type type)
         {
-            return _optionsToCast
+            return OptionsToCast
                 .Where(t => t.Key == type)
                 .Select(f => f.Value).FirstOrDefault();
         }
@@ -118,9 +135,10 @@ namespace AutoCaster
         #endregion
 
         #region Private Methods
-        private bool TryCastElement(Type typeToCast, object objectToCast, out object castedObject)
+
+        internal bool TryCastElement(Type typeToCast, object objectToCast, out object castedObject)
         {
-            var castingFunc = _optionsToCast
+            var castingFunc = OptionsToCast
                 .Where(t => t.Key == typeToCast)
                 .Select(v => v.Value).FirstOrDefault();
 
@@ -139,10 +157,10 @@ namespace AutoCaster
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
 
-            return _optionsToCast.ContainsKey(type);
+            return OptionsToCast.ContainsKey(type);
         }
 
-        private bool TryAutoMap(Type typeToCast, object objectToMap, out object castedObject)
+        internal bool TryAutoMap(Type typeToCast, object objectToMap, out object castedObject)
         {
             var target = Activator.CreateInstance(typeToCast);
 
@@ -166,6 +184,7 @@ namespace AutoCaster
             castedObject = target;
             return true;
         }
+
         #endregion
     }
 }
