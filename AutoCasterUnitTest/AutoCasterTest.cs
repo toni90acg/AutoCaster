@@ -174,12 +174,10 @@ namespace AutoCasterUnitTest
             };
 
             _autoCaster = new AutoCaster.AutoCaster();
-            //.RegisterAutoMapping<PersonDto>(person);
 
+            var personDto = _autoCaster.AutoCast<PersonDto>(person);
 
-            var personDto = _autoCaster.AutoCast<Person>(person);
-
-            Assert.AreEqual(typeof(Person), person.GetType());
+            Assert.AreEqual(typeof(PersonDto), person.GetType());
             Assert.AreEqual(personDto.Id, person.Id);
             Assert.AreEqual(personDto.Age, person.Age);
             Assert.AreEqual(personDto.Name, person.Name);
