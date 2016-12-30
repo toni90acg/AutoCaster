@@ -5,6 +5,8 @@ namespace AutoCaster.Interfaces
 {
     public interface IAutoCaster
     {
+        #region AutoCast
+
         /// <summary>
         /// Casts everything. But is generally used to cast simple objects like:
         /// string, int, double, etc...
@@ -22,6 +24,10 @@ namespace AutoCaster.Interfaces
         /// <param name="objectToCast"> This is the object that we want to cast</param>
         /// <returns> Returns the casted object</returns>
         T AutoCast<T>(object objectToCast) where T : class;
+
+        #endregion
+
+        #region Registration and Unregistration
 
         /// <summary>
         /// Registers a mapping func (a func with an specific mapping) with an specific type
@@ -64,6 +70,10 @@ namespace AutoCaster.Interfaces
         /// <returns></returns>
         IAutoCaster UnregisterCastMapping<T>();
 
+        #endregion
+
+        #region Getters
+
         /// <summary>
         /// Gets the list of all the registered types
         /// </summary>
@@ -76,5 +86,7 @@ namespace AutoCaster.Interfaces
         /// <param name="type"></param>
         /// <returns>The mapping func of a registered type</returns>
         Func<object, object> GetFuncForType(Type type);
+
+        #endregion
     }
 }
