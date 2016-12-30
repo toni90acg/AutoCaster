@@ -1,4 +1,5 @@
-﻿using AutoCaster.Interfaces;
+﻿using AutoCaster.Exceptions;
+using AutoCaster.Interfaces;
 using AutoCasterUnitTest.ClassesForTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,6 +13,7 @@ namespace AutoCasterUnitTest
         #region Simple Cast Test Methods
 
         [TestMethod]
+        [TestCategory("AutoCasterSimpleCast")]
         public void TestCastingFromStringToDouble()
         {
             _autoCaster = new AutoCaster.AutoCaster();
@@ -23,6 +25,7 @@ namespace AutoCasterUnitTest
         }
 
         [TestMethod]
+        [TestCategory("AutoCasterSimpleCast")]
         public void TestCastingFromIntToString()
         {
             _autoCaster = new AutoCaster.AutoCaster();
@@ -35,6 +38,7 @@ namespace AutoCasterUnitTest
         }
 
         [TestMethod]
+        [TestCategory("AutoCasterSimpleCast")]
         public void TestCastingFromIntToDouble()
         {
             _autoCaster = new AutoCaster.AutoCaster();
@@ -46,6 +50,7 @@ namespace AutoCasterUnitTest
         }
 
         [TestMethod]
+        [TestCategory("AutoCasterSimpleCast")]
         public void TestCastingFromStringToDoubleWithError()
         {
             _autoCaster = new AutoCaster.AutoCaster();
@@ -57,6 +62,8 @@ namespace AutoCasterUnitTest
         }
 
         #endregion
+
+        #region Mapping Funcs Samples
 
         private object MappingFuncFromPersonToPersonDto(object o)
         {
@@ -91,6 +98,10 @@ namespace AutoCasterUnitTest
                 Name = person.Name
             };
         }
+
+        #endregion
+
+        #region AutoCast With Manual Mapping Funcs
 
         [TestMethod]
         [TestCategory("AutoCasterWithManualMapping")]
@@ -147,6 +158,10 @@ namespace AutoCasterUnitTest
             Assert.AreEqual(personDto.Name, person.Name);
         }
 
+        #endregion
+
+        #region AutoCast With Auto Mapping
+
         [TestMethod]
         [TestCategory("AutoCasterWithAutoMapping")]
         public void TestAutoCasterFromPersonToPersonDtoAutoMapping()
@@ -159,7 +174,7 @@ namespace AutoCasterUnitTest
             };
 
             _autoCaster = new AutoCaster.AutoCaster();
-                //.RegisterAutoMapping<PersonDto>(person);
+            //.RegisterAutoMapping<PersonDto>(person);
 
 
             var personDto = _autoCaster.AutoCast<Person>(person);
@@ -200,6 +215,10 @@ namespace AutoCasterUnitTest
             Assert.AreEqual(2, person.NumChildrens);
         }
 
+        #endregion
+
+        #region AutoCast Registrations And Unregistrations
+
         [TestMethod]
         [TestCategory("AutoCasterRegistrationsAndUnregistrations")]
         public void TestAutoCasterRegistration1()
@@ -232,7 +251,7 @@ namespace AutoCasterUnitTest
 
             var func = _autoCaster.GetFuncForType(typeof(PersonDto));
 
-            Assert.AreEqual(numTypesRegisteredBefore+1,numTypesRegisteredAfter);
+            Assert.AreEqual(numTypesRegisteredBefore + 1, numTypesRegisteredAfter);
             Assert.IsNotNull(func);
         }
 
@@ -244,12 +263,74 @@ namespace AutoCasterUnitTest
             var typesList = _autoCaster.GetListOfTypesRegistered();
             var numTypesRegisteredBefore = typesList.Count;
 
-            _autoCaster.UnegisterCastMapping(typeof(int));
+            _autoCaster.UnregisterCastMapping(typeof(int));
 
             typesList = _autoCaster.GetListOfTypesRegistered();
             var numTypesRegisteredAfter = typesList.Count;
 
             Assert.AreEqual(numTypesRegisteredBefore - 1, numTypesRegisteredAfter);
         }
+
+        [TestMethod]
+        [TestCategory("AutoCasterRegistrationsAndUnregistrations")]
+        public void TestAutoCasterRegistrationForced()
+        {
+            var person = new Person()
+            {
+                Id = 1,
+                Name = "Antonio",
+                Age = 26
+            };
+
+            _autoCaster = new AutoCaster.AutoCaster();
+
+            _autoCaster.RegisterCastMapping<PersonDto>(p =>
+            {
+                var per = p as Person;
+                if (per == null) return null;
+                return new PersonDto()
+                {
+                    Name = per.Name
+                };
+            });
+
+            var personDtoOnlyName = _autoCaster.AutoCast<PersonDto>(person);
+
+
+            _autoCaster.RegisterCastMappingForced<PersonDto>(p =>
+            {
+                var per = p as Person;
+                if (per == null) return null;
+                return new PersonDto()
+                {
+                    Id = per.Id,
+                    Name = per.Name,
+                    Age = per.Age
+                };
+            });
+
+            var personDtoCompleted = _autoCaster.AutoCast<PersonDto>(person);
+
+            Assert.AreEqual(0, personDtoOnlyName.Id);
+            Assert.AreEqual(0, personDtoOnlyName.Age);
+            Assert.AreEqual(person.Id, personDtoCompleted.Id);
+            Assert.AreEqual(person.Age, personDtoCompleted.Age);
+        }
+
+        [TestMethod]
+        [TestCategory("AutoCasterRegistrationsAndUnregistrations")]
+        [ExpectedException(typeof(AutoCasterTypeRegisteredException))]
+        public void TestAutoCasterRegistrationException()
+        {
+            _autoCaster = new AutoCaster.AutoCaster();
+
+            _autoCaster
+                .RegisterCastMapping<PersonDto>(p => p)
+                .RegisterCastMapping<PersonStrings>(p => p)
+                .RegisterCastMapping<PersonDto>(p => p)
+                .RegisterCastMapping<Car>(c => c);
+        }
+
+        #endregion
     }
 }

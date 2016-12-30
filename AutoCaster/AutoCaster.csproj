@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoCaster.cs" />
+    <Compile Include="AutoCasterSingleton.cs" />
     <Compile Include="AutoCastStrategy\AutoCastStrategyHandler.cs" />
     <Compile Include="Exceptions\AutoCasterInvalidCastingException.cs" />
     <Compile Include="Exceptions\AutoCasterTypeRegisteredException.cs" />

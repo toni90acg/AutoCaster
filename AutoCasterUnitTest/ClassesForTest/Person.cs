@@ -1,5 +1,8 @@
-﻿namespace AutoCasterUnitTest.ClassesForTest
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace AutoCasterUnitTest.ClassesForTest
 {
+    [ExcludeFromCodeCoverage]
     public class Person
     {
         public int Id { get; set; }

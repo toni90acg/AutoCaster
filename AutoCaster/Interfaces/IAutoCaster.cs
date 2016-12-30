@@ -31,6 +31,13 @@ namespace AutoCaster.Interfaces
         IAutoCaster RegisterCastMapping(Type typeToCast, Func<object, object> mappingFunc);
 
         /// <summary>
+        /// Register a mapping func with an specific type overwriting any past mapping func
+        /// </summary>
+        /// <param name="typeToCast">The type that will be registered</param>
+        /// <param name="mappingFunc">The specific mapping</param>
+        IAutoCaster RegisterCastMappingForced(Type typeToCast, Func<object, object> mappingFunc);
+
+        /// <summary>
         /// Registers a mapping func (a func with an specific mapping) with an specific type
         /// </summary>
         /// <typeparam name="T">The type that will be registered</typeparam>
@@ -38,10 +45,17 @@ namespace AutoCaster.Interfaces
         IAutoCaster RegisterCastMapping<T>(Func<object, object> mappingFunc);
 
         /// <summary>
+        /// Register a mapping func with an specific type overwriting any past mapping func
+        /// </summary>
+        /// <typeparam name="T">The type that will be registered</typeparam>
+        /// <param name="mappingFunc">The specific mapping</param>
+        IAutoCaster RegisterCastMappingForced<T>(Func<object, object> mappingFunc);
+
+        /// <summary>
         /// Unegisters a mapping func (a func with an specific mapping) with an specific type
         /// </summary>
         /// <param name="typeToCast">The type that will be unregistered</param>
-        IAutoCaster UnegisterCastMapping(Type typeToCast);
+        IAutoCaster UnregisterCastMapping(Type typeToCast);
 
         /// <summary>
         /// Unegisters a mapping func (a func with an specific mapping) with an specific type

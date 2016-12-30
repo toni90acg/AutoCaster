@@ -43,9 +43,9 @@ namespace AutoCaster
             ObjectToCast = objectToCast;
             CastToType = castToType;
 
-            var strategyHandler = new AutoCastStrategyHandler(this);
-            var strategy = strategyHandler.GetAutoCastStrategy(castToType);
-            castedObject = strategy.AutoCast(this);
+            castedObject = new AutoCastStrategyHandler(this)
+                .GetAutoCastStrategy(castToType)
+                .AutoCast(this);
 
             return castedObject != null;
         }
@@ -87,11 +87,24 @@ namespace AutoCaster
 
         public IAutoCaster RegisterCastMapping(Type typeToCast, Func<object, object> mappingFunc)
         {
-            TypeIsRegistered(typeToCast);
-            if (!TypeIsRegistered(typeToCast))
+            if (TypeIsRegistered(typeToCast))
             {
-                OptionsToCast.Add(typeToCast, mappingFunc);
+                throw new AutoCasterTypeRegisteredException($"The type: {typeToCast.Name}, has already been registered");
             }
+
+            OptionsToCast.Add(typeToCast, mappingFunc);
+            
+            return this;
+        }
+
+        public IAutoCaster RegisterCastMappingForced(Type typeToCast, Func<object, object> mappingFunc)
+        {
+            if (TypeIsRegistered(typeToCast))
+            {
+                OptionsToCast.Remove(typeToCast);
+            }
+            OptionsToCast.Add(typeToCast, mappingFunc);
+
             return this;
         }
 
@@ -100,7 +113,12 @@ namespace AutoCaster
             return RegisterCastMapping(typeof(T), mappingFunc);
         }
 
-        public IAutoCaster UnegisterCastMapping(Type typeToCast)
+        public IAutoCaster RegisterCastMappingForced<T>(Func<object, object> mappingFunc)
+        {
+            return RegisterCastMappingForced(typeof(T), mappingFunc);
+        }
+
+        public IAutoCaster UnregisterCastMapping(Type typeToCast)
         {
             if (TypeIsRegistered(typeToCast))
             {
@@ -111,7 +129,7 @@ namespace AutoCaster
 
         public IAutoCaster UnregisterCastMapping<T>()
         {
-            return UnegisterCastMapping(typeof(T));
+            return UnregisterCastMapping(typeof(T));
         }
 
         #endregion
@@ -127,7 +145,8 @@ namespace AutoCaster
         {
             return OptionsToCast
                 .Where(t => t.Key == type)
-                .Select(f => f.Value).FirstOrDefault();
+                .Select(f => f.Value)
+                .FirstOrDefault();
         }
 
         #endregion
@@ -138,19 +157,13 @@ namespace AutoCaster
 
         internal bool TryCastElement(Type typeToCast, object objectToCast, out object castedObject)
         {
-            var castingFunc = OptionsToCast
-                .Where(t => t.Key == typeToCast)
-                .Select(v => v.Value).FirstOrDefault();
+            castedObject = OptionsToCast
+                .Where(type => type.Key == typeToCast)
+                .Select(func => func.Value)
+                .FirstOrDefault()?
+                .Invoke(objectToCast);
 
-            var castedElement = castingFunc?.Invoke(objectToCast);
-
-            if (castedElement == null)
-            {
-                throw new AutoCasterInvalidCastingException("Imposible to cast");
-            }
-
-            castedObject = castedElement;
-            return true;
+            return castedObject != null;
         }
 
         private bool TypeIsRegistered(Type type)
@@ -162,15 +175,15 @@ namespace AutoCaster
 
         internal bool TryAutoMap(Type typeToCast, object objectToMap, out object castedObject)
         {
-            var target = Activator.CreateInstance(typeToCast);
+            castedObject = Activator.CreateInstance(typeToCast);
 
-            var propertyInfosObjectToCast = objectToMap.GetType().GetProperties();
-            var propertyInfosCastedObject = target.GetType().GetProperties();
+            var objectToCastProperties = objectToMap.GetType().GetProperties();
+            var castedObjectProperties = castedObject.GetType().GetProperties();
 
-            foreach (var propertyCastedObject in propertyInfosCastedObject)
+            foreach (var propertyCastedObject in castedObjectProperties)
             {
-                var propertiesWithSameName = propertyInfosObjectToCast
-                    .FirstOrDefault(o => o.Name == propertyCastedObject.Name);
+                var propertiesWithSameName = objectToCastProperties
+                    .FirstOrDefault(property => property.Name == propertyCastedObject.Name);
 
                 if (propertiesWithSameName == null) continue;
 
@@ -178,10 +191,9 @@ namespace AutoCaster
                 var propertyType = propertyCastedObject.PropertyType;
                 object valueCasted;
                 TryAutoCast(value, propertyType, out valueCasted);
-                propertyCastedObject.SetValue(target, valueCasted);
+                propertyCastedObject.SetValue(castedObject, valueCasted);
             }
 
-            castedObject = target;
             return true;
         }
 

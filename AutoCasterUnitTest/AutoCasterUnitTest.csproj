@@ -50,6 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="AutoCasterSingletonTest.cs" />
     <Compile Include="AutoCasterTest.cs" />
     <Compile Include="ClassesForTest\Car.cs" />
     <Compile Include="ClassesForTest\PersonDto.cs" />
