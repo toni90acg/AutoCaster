@@ -19,3 +19,6 @@ As simple as:
 
             var personDto = new AutoCaster()
                             .AutoCast<PersonDto>(person);
+
+More information:
+It uses Strategy Pattern, Singleton Pattern and Fluent Interface.
