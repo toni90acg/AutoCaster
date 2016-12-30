@@ -1,3 +1,4 @@
+
 # AutoCaster
 The AutoCaster is a tool to cast everything.
 
@@ -18,7 +19,47 @@ As simple as:
             };
 
             var personDto = new AutoCaster()
-                            .AutoCast<PersonDto>(person);
+                               .AutoCast<PersonDto>(person);
+                            
+       or use the Singleton AutoCaster
+       
+            var personDto = AutoCasterSingleton
+                               .GetInstance()
+                               .AutoCast<PersonDto>(person);
+
+If you need an specific mapping for an object:
+
+            var personDto = new AutoCaster()
+                               .RegisterCastMapping<PersonDto>(p =>
+                                {
+                                    var per = p as Person;
+                                    if (per == null) return null;
+                                    return new PersonDto()
+                                    {
+                                       Id = per.Id,
+                                       Name = per.Name,
+                                       Age = per.Age
+                                    };
+                                })
+                               .AutoCast<PersonDto>(person);
+                               
+      or use the Singleton AutoCaster
+       
+            var personDto = AutoCasterSingleton
+                               .GetInstance()
+                               .RegisterCastMapping<PersonDto>(p =>
+                                {
+                                    var per = p as Person;
+                                    if (per == null) return null;
+                                    return new PersonDto()
+                                    {
+                                       Id = per.Id,
+                                       Name = per.Name,
+                                       Age = per.Age
+                                    };
+                                })
+                               .AutoCast<PersonDto>(person);
+
 
 More information:
 It uses Strategy Pattern, Singleton Pattern and Fluent Interface.
