@@ -1,12 +1,14 @@
-﻿namespace AutoCaster
+﻿using AutoCaster.Interfaces;
+
+namespace AutoCaster
 {
     public class AutoCasterSingleton
     {
-        private static AutoCaster _instance;
+        private static IAutoCaster _instance;
 
         private AutoCasterSingleton(){}
 
-        public static AutoCaster GetInstance()
+        public static IAutoCaster GetInstance()
         {
             return _instance ?? (_instance = new AutoCaster());
         }
