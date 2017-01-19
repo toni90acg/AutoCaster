@@ -47,6 +47,8 @@
     <Compile Include="Exceptions\AutoCasterTypeRegisteredException.cs" />
     <Compile Include="AutoCastStrategy\Strategies\Interface\IAutoCastStrategy.cs" />
     <Compile Include="Interfaces\IAutoCaster.cs" />
+    <Compile Include="Utils\PairPropertiesInfo.cs" />
+    <Compile Include="Utils\MappingElementProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AutoCastStrategy\Strategies\SameTypeAutoCastStrategy.cs" />
     <Compile Include="AutoCastStrategy\Strategies\TypeNonRegisteredAutoCastStrategy.cs" />

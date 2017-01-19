@@ -6,7 +6,7 @@ namespace AutoCaster.AutoCastStrategy.Strategies
     {
         public object AutoCast(AutoCaster context)
         {
-            return context.OptionsToCast;
+            return context.ObjectToCast;
         }
     }
 }

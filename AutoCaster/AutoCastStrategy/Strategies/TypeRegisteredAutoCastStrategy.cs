@@ -11,8 +11,9 @@ namespace AutoCaster.AutoCastStrategy.Strategies
             {
                 object castedObject;
                 return context
-                    .TryCastElement(context.CastToType, context.ObjectToCast, out castedObject) ?
-                    castedObject : null;
+                    .TryCastElement(context.CastToType, context.ObjectToCast, out castedObject)
+                    ? castedObject
+                    : null;
             }
             catch (Exception)
             {

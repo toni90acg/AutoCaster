@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using AutoCaster.AutoCastStrategy;
 using AutoCaster.Exceptions;
 using AutoCaster.Interfaces;
+using AutoCaster.Utils;
 
 namespace AutoCaster
 {
@@ -50,7 +52,7 @@ namespace AutoCaster
             return castedObject != null;
         }
 
-        [Obsolete("Better to use TryAutoCastWithStrategies")]
+        [Obsolete("Better to use TryAutoCast")]
         public bool TryAutoCastWithoutStrategies(object objectToCast, Type castToType, out object castedObject)
         {
             if (castToType == objectToCast.GetType())
@@ -93,7 +95,7 @@ namespace AutoCaster
             }
 
             OptionsToCast.Add(typeToCast, mappingFunc);
-            
+
             return this;
         }
 
@@ -177,24 +179,27 @@ namespace AutoCaster
         {
             castedObject = Activator.CreateInstance(typeToCast);
 
-            var objectToCastProperties = objectToMap.GetType().GetProperties();
-            var castedObjectProperties = castedObject.GetType().GetProperties();
+            var mappingElement = new MappingElementProperties(objectToMap, castedObject);
 
-            foreach (var propertyCastedObject in castedObjectProperties)
+            foreach (var propertyInfoPair in mappingElement.PropertiesWithSameName)
             {
-                var propertiesWithSameName = objectToCastProperties
-                    .FirstOrDefault(property => property.Name == propertyCastedObject.Name);
+                var valueCasted = CreateCastedObjectByPropertyInfo(propertyInfoPair, objectToMap);
 
-                if (propertiesWithSameName == null) continue;
-
-                var value = propertiesWithSameName.GetValue(objectToMap);
-                var propertyType = propertyCastedObject.PropertyType;
-                object valueCasted;
-                TryAutoCast(value, propertyType, out valueCasted);
+                var propertyCastedObject = propertyInfoPair.Value;
                 propertyCastedObject.SetValue(castedObject, valueCasted);
             }
-
             return true;
+        }
+
+        private object CreateCastedObjectByPropertyInfo(KeyValuePair<PropertyInfo, PropertyInfo> propertyInfoPair, object objectToMap)
+        {
+            var propertyValueObjectToMap = propertyInfoPair.Key.GetValue(objectToMap);
+            var propertyTypeCastedObject = propertyInfoPair.Value.PropertyType;
+
+            object valueCasted;
+            TryAutoCast(propertyValueObjectToMap, propertyTypeCastedObject, out valueCasted);
+
+            return valueCasted;
         }
 
         #endregion

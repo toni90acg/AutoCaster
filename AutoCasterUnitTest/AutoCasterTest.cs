@@ -177,7 +177,7 @@ namespace AutoCasterUnitTest
 
             var personDto = _autoCaster.AutoCast<PersonDto>(person);
 
-            Assert.AreEqual(typeof(PersonDto), person.GetType());
+            Assert.AreEqual(typeof(PersonDto), personDto.GetType());
             Assert.AreEqual(personDto.Id, person.Id);
             Assert.AreEqual(personDto.Age, person.Age);
             Assert.AreEqual(personDto.Name, person.Name);

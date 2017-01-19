@@ -8,8 +8,9 @@ namespace AutoCaster.AutoCastStrategy
 {
     public class AutoCastStrategyHandler
     {
-        private readonly 
+        private readonly
             Dictionary<Func<Type, bool>, IAutoCastStrategy> _dictionaryStrategies;
+
         private readonly AutoCaster _context;
 
         public AutoCastStrategyHandler(AutoCaster context)
@@ -17,12 +18,18 @@ namespace AutoCaster.AutoCastStrategy
             _context = context;
             _dictionaryStrategies = new Dictionary<Func<Type, bool>, IAutoCastStrategy>
             {
-                {type => _context.OptionsToCast.ContainsKey(type),
-                    new TypeRegisteredAutoCastStrategy()},
-                {type => !_context.OptionsToCast.ContainsKey(type),
-                    new TypeNonRegisteredAutoCastStrategy()},
-                {type => _context.ObjectToCast.GetType() == type,
-                    new SameTypeAutoCastStrategy()}
+                {
+                    type => _context.ObjectToCast.GetType() == type,
+                    new SameTypeAutoCastStrategy()
+                },
+                {
+                    type => _context.OptionsToCast.ContainsKey(type),
+                    new TypeRegisteredAutoCastStrategy()
+                },
+                {
+                    type => !_context.OptionsToCast.ContainsKey(type),
+                    new TypeNonRegisteredAutoCastStrategy()
+                }
             };
         }
 
