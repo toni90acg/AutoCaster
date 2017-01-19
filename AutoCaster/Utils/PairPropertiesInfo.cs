@@ -12,7 +12,7 @@ namespace AutoCaster.Utils
         /// <param name="castedObjectProperty">Refered to the property of the casted object</param>
         public void AddProperty(PropertyInfo propertyWithSameName, PropertyInfo castedObjectProperty)
         {
-           Add(propertyWithSameName,castedObjectProperty); 
+           Add(propertyWithSameName,castedObjectProperty);
         }
     }
 }
